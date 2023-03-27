@@ -1,0 +1,42 @@
+# flyctl launch added from .gitignore
+**/target
+**/.env
+self_signed_certs
+**/dist
+
+# flyctl launch added from client/.gitignore
+client/**/.turbo
+client/**/node_modules
+
+# flyctl launch added from client/apps/web/.gitignore
+# Logs
+client/apps/web/**/logs
+client/apps/web/**/*.log
+client/apps/web/**/npm-debug.log*
+client/apps/web/**/yarn-debug.log*
+client/apps/web/**/yarn-error.log*
+client/apps/web/**/pnpm-debug.log*
+client/apps/web/**/lerna-debug.log*
+
+client/apps/web/**/node_modules
+client/apps/web/**/dist
+client/apps/web/**/dist-ssr
+client/apps/web/**/*.local
+
+# Editor directories and files
+client/apps/web/**/.vscode/*
+!client/apps/web/**/.vscode/extensions.json
+client/apps/web/**/.idea
+client/apps/web/**/.DS_Store
+client/apps/web/**/*.suo
+client/apps/web/**/*.ntvs*
+client/apps/web/**/*.njsproj
+client/apps/web/**/*.sln
+client/apps/web/**/*.sw?
+
+# flyctl launch added from client/node_modules/tailwindcss/stubs/.gitignore
+!client/node_modules/tailwindcss/stubs/**/*
+fly.toml
+
+mookbark-kp.pem
+*.tar
