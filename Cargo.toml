@@ -1,0 +1,30 @@
+[package]
+name = "mookbark"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+termtree = { path = "./termtree" }
+
+oauth2 = { version = "4.3.0" }
+async-std = { version = "^1", features = ["attributes", "tokio1"] }
+async-trait = "0.1.60"
+clap = { version = "4.0", features = ["derive"] }
+dotenvy = "0.15.5"
+figment = "0.10.6"
+futures = "0.3.24"
+rocket = { git = "https://github.com/SergioBenitez/Rocket.git", branch = "v0.5-rc", features = [
+  "json",
+  "tls",
+] }
+rocket_db_pools = { git = "https://github.com/SergioBenitez/Rocket.git", branch = "v0.5-rc" }
+sea-orm = { version = "^0.10.0", features = [
+  "sqlx-mysql",
+  "runtime-async-std-native-tls",
+  "macros",
+] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "^1" }
+reqwest = { version = "0.11.13", features = ["json"] }
