@@ -696,11 +696,6 @@
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
-"@planetscale/database@^1.16.0":
-  version "1.16.0"
-  resolved "https://registry.yarnpkg.com/@planetscale/database/-/database-1.16.0.tgz#9bac2c3f4e5b7d67e61c02688087b788d07f7fb3"
-  integrity sha512-HNUrTqrd8aTRZYMDcsoZ62s36sIWkMMmKZBOehoCWR2WrfNPKq+Q1yQef5okl3pSVlldFnu2h/dbHjOsDTHXug==
-
 "@puppeteer/browsers@2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@puppeteer/browsers/-/browsers-2.1.0.tgz#2683d3c908ecfc9af6b63111b5037679d3cebfd8"
@@ -1497,11 +1492,6 @@
   integrity sha512-UalkSAny/dz1m8giEhD3Y5ru1o+CPHI32wFyS3MyzDzj2TRvEN+lTw+mPwi20ojk0H2gs8TBW3qsrvwuLLy+pA==
   dependencies:
     crypto-js "^4.2.0"
-
-"@upstash/vector@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@upstash/vector/-/vector-1.0.3.tgz#56774a9be3d121a2fa07850fdcdb98525a127aa1"
-  integrity sha512-DJwLIim/qCWt1LySsgJeeoxCCSA/h8Z2rUt5o1PVKdQTNbLGL+dzY9T9/xwjZF7Scwv107Bh7wCuZrmzgamiSw==
 
 "@vercel/analytics@^1.2.2":
   version "1.2.2"
@@ -5051,6 +5041,11 @@ postcss@^8, postcss@^8.4.20, postcss@^8.4.23, postcss@^8.4.27:
     nanoid "^3.3.7"
     picocolors "^1.0.0"
     source-map-js "^1.0.2"
+
+postgres@^3.4.4:
+  version "3.4.4"
+  resolved "https://registry.yarnpkg.com/postgres/-/postgres-3.4.4.tgz#adbe08dc1fff0dea3559aa4f83ded70a289a6cb8"
+  integrity sha512-IbyN+9KslkqcXa8AO9fxpk97PA4pzewvpi2B3Dwy9u4zpV32QicaEdgmF3eSQUzdRk7ttDHQejNgAEr4XoeH4A==
 
 preact-render-to-string@5.2.3:
   version "5.2.3"

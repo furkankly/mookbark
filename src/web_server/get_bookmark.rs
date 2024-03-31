@@ -21,7 +21,7 @@ impl From<bookmark::Model> for Bookmark {
         Bookmark {
             url: value.url,
             user_id: value.user_id,
-            ingested: value.ingested != 0,
+            ingested: value.ingested,
         }
     }
 }

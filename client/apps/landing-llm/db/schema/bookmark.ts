@@ -1,11 +1,6 @@
-import {
-  boolean,
-  mysqlTable,
-  varchar,
-  primaryKey,
-} from "drizzle-orm/mysql-core";
+import { boolean, pgTable, varchar, primaryKey } from "drizzle-orm/pg-core";
 
-export const bookmark = mysqlTable(
+export const bookmark = pgTable(
   "bookmark",
   {
     url: varchar("url", { length: 255 }).notNull(),
@@ -14,5 +9,5 @@ export const bookmark = mysqlTable(
   },
   (table) => {
     return { pk: primaryKey({ columns: [table.url, table.userId] }) };
-  },
+  }
 );

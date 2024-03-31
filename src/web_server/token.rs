@@ -141,7 +141,11 @@ async fn create_or_signin_user(
 ) -> Result<(), StatusCode> {
     let user = services::check_user(&app_state.db_conn, &oauth_provider, &oauth_user.id)
         .await
-        .map_err(|_err| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|err| {
+            let err = err.to_string();
+            tracing::error!(err);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
 
     let mut user_id = nanoid!();
     match user {

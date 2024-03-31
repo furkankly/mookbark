@@ -13,4 +13,4 @@ async-std = { version = "^1", features = ["attributes", "tokio1"] }
 
 [dependencies.sea-orm-migration]
 version = "^0.9.0"
-features = ["sqlx-mysql", "runtime-async-std-native-tls"]
+features = ["sqlx-postgres", "runtime-async-std-native-tls"]

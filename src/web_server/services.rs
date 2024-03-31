@@ -9,6 +9,10 @@ use anyhow::{Error, Result};
 use sea_orm::TransactionTrait;
 use sea_orm::*;
 
+// Closure Table pattern is used for implementing hierarchical data
+// See:
+// https://stackoverflow.com/questions/17302716/hierarchical-sql-data-recursive-cte-vs-hierarchyid-vs-closure-table
+
 // TODO: user_id is read from sesion and not user table for all services
 // can this mess up the data integrity?
 // Resetting the session store before each release can help
@@ -36,36 +40,31 @@ pub async fn add_bookmark(
     let bookmark = bookmark::ActiveModel {
         url: ActiveValue::Set(url.to_owned()),
         user_id: ActiveValue::Set(user_id.to_owned()),
-        ingested: ActiveValue::Set(0),
+        ingested: ActiveValue::Set(false),
     };
     Bookmark::insert(bookmark).exec(txn).await?;
 
     // Insert for each ancestor of container_name
     txn.execute(Statement::from_sql_and_values(
-        DbBackend::MySql,
+        DbBackend::Postgres,
         r#"
             INSERT INTO closure (user_id, ancestor, descendant)
-            SELECT ?, ancestor, ?
+            SELECT $1, ancestor, $2
             FROM closure
-            WHERE user_id = ? AND descendant = ?;
+            WHERE user_id = $1 AND descendant = $3;
         "#,
-        vec![
-            user_id.into(),
-            url.into(),
-            user_id.into(),
-            container_name.into(),
-        ],
+        vec![user_id.into(), url.into(), container_name.into()],
     ))
     .await?;
 
     // Ending mark
     txn.execute(Statement::from_sql_and_values(
-        DbBackend::MySql,
+        DbBackend::Postgres,
         r#"
             INSERT INTO closure (user_id, ancestor, descendant)
-            SELECT ?, ?, ?;
+            SELECT $1, $2, $2;
         "#,
-        vec![user_id.into(), url.into(), url.into()],
+        vec![user_id.into(), url.into()],
     ))
     .await?;
     Ok(())
@@ -103,10 +102,10 @@ pub async fn add_container(
 
     if container_name == "root" {
         txn.execute(Statement::from_sql_and_values(
-            DbBackend::MySql,
+            DbBackend::Postgres,
             r#"
                 INSERT INTO closure (user_id, ancestor, descendant)
-                SELECT ?, ?, ?;
+                SELECT $1, $2, $3;
             "#,
             // parent_container_name = "root" , container_name = "root"
             vec![
@@ -119,17 +118,16 @@ pub async fn add_container(
     } else {
         // Insert for each ancestor of parent_container_name
         txn.execute(Statement::from_sql_and_values(
-            DbBackend::MySql,
+            DbBackend::Postgres,
             r#"
                 INSERT INTO closure (user_id, ancestor, descendant)
-                SELECT ?, ancestor, ?
+                SELECT $1, ancestor, $2
                 FROM closure
-                WHERE user_id = ? AND descendant = ?;
+                WHERE user_id = $1 AND descendant = $3;
             "#,
             vec![
                 user_id.into(),
                 container_name.into(),
-                user_id.into(),
                 parent_container_name.into(),
             ],
         ))
@@ -137,12 +135,12 @@ pub async fn add_container(
 
         // Ending mark
         txn.execute(Statement::from_sql_and_values(
-            DbBackend::MySql,
+            DbBackend::Postgres,
             r#"
                 INSERT INTO closure (user_id, ancestor, descendant)
-                SELECT ?, ?, ?;
+                SELECT $1, $2, $2;
             "#,
-            vec![user_id.into(), container_name.into(), container_name.into()],
+            vec![user_id.into(), container_name.into()],
         ))
         .await?;
     }
@@ -188,14 +186,14 @@ pub async fn delete_entity(
     // PlanetScale doesn't support CTE yet, and temporary tables
     // raise db errors too for some reason. So we subquery the paths in each step of deletion.
     txn.execute(Statement::from_sql_and_values(
-        DbBackend::MySql,
+        DbBackend::Postgres,
         r#"
             DELETE FROM bookmark
-            WHERE user_id = ?
+            WHERE user_id = $1
                 AND url IN(
                     SELECT descendant
                     FROM closure
-                    WHERE ancestor = ?);
+                    WHERE ancestor = $2);
         "#,
         vec![user_id.into(), url_or_container_name.into()],
     ))
@@ -204,14 +202,14 @@ pub async fn delete_entity(
     if entity_type.eq("container") {
         // Try deleting from container in case its a container
         txn.execute(Statement::from_sql_and_values(
-            DbBackend::MySql,
+            DbBackend::Postgres,
             r#"
                 DELETE FROM container 
-                WHERE user_id = ?
+                WHERE user_id = $1
                     AND name IN(
                         SELECT descendant
                         FROM closure
-                        WHERE ancestor = ?);
+                        WHERE ancestor = $2);
             "#,
             vec![user_id.into(), url_or_container_name.into()],
         ))
@@ -219,20 +217,22 @@ pub async fn delete_entity(
     }
 
     // Delete the path(s)
+    // TODO: Research if this is the case with Postgres as well:
     // MySQL doesn't like to directly access a table it is deleting from so we need to wrap the
     // table in a pseudo subquery.
+    // https://stackoverflow.com/questions/4471277/mysql-delete-from-with-subquery-as-condition
     txn.execute(Statement::from_sql_and_values(
-        DbBackend::MySql,
+        DbBackend::Postgres,
         r#"
             DELETE FROM closure
-            WHERE user_id = ?
+            WHERE user_id = $1
                 AND descendant IN(
-                    SELECT
-                        descendant FROM (
-                            SELECT
-                                descendant FROM closure
-                            WHERE
-                                ancestor = ?) AS d);
+                    SELECT descendant 
+                    FROM(
+                        SELECT descendant 
+                        FROM closure
+                        WHERE ancestor = $2)
+                    AS d);
         "#,
         vec![user_id.into(), url_or_container_name.into()],
     ))
@@ -248,17 +248,18 @@ pub struct Path {
 
 pub async fn get_paths(db_conn: &DatabaseConnection, user_id: &str) -> Result<Vec<Path>, DbErr> {
     let paths: Vec<Path> = Path::find_by_statement(Statement::from_sql_and_values(
-        DbBackend::MySql,
+        DbBackend::Postgres,
         r#"
-            SELECT group_concat(a.ancestor order by a.closure_id separator "->") as
-            path
-            FROM closure d
-            JOIN closure a
-            ON (a.descendant = d.descendant)
-            WHERE d.user_id = ? AND a.user_id = ? AND d.ancestor = "root" AND d.ancestor != d.descendant
+            SELECT STRING_AGG(a.ancestor, '->' ORDER BY a.closure_id) AS path
+            FROM closure AS d
+            JOIN closure AS a ON a.descendant = d.descendant
+            WHERE d.user_id = $1
+                AND a.user_id = $1
+                AND d.ancestor = 'root'
+                AND d.ancestor != d.descendant
             GROUP BY a.descendant;
         "#,
-        vec![user_id.into(), user_id.into()],
+        vec![user_id.into()],
     ))
     .all(db_conn)
     .await?;
