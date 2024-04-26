@@ -1,6 +1,6 @@
-![Logo](https://github.com/furkankly/mookbark/blob/main/client/apps/landing-llm/public/og-image.png?raw=true)
-
 # Mookbark
+
+![Mookbark Demo](https://github.com/furkankly/mookbark/blob/main/client/apps/landing-llm/public/mookbark-demo.gif?raw=true)
 
 ## Manage and chat with your bookmarks for free.
 

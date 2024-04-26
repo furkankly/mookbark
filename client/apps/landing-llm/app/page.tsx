@@ -2,6 +2,7 @@ import { Mookbark } from "ui";
 import Box from "./box";
 import Zigzags from "./zigzags";
 import LoginButton from "./login-button";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -22,8 +23,17 @@ export default function Home() {
         </div>
         <Box />
       </div>
-      <div className="relative w-full">
+      <div className="relative z-[1] w-full">
         <Zigzags />
+      </div>
+      <div className="relative m-auto h-1/3 rounded bg-yellow-600 md:h-1/2 md:w-3/4 xl:w-1/2">
+        <Image
+          className="p-4"
+          src="/mookbark-demo.gif"
+          alt="mookbark-demo"
+          fill
+          priority
+        />
       </div>
       <div className="mx-auto flex flex-col items-stretch justify-between gap-10 rounded bg-yellow-600 p-14 text-white xl:max-w-screen-2xl xl:flex-row">
         <div className="flex w-full flex-col gap-10 rounded border-2 border-yellow-300 p-6 xl:flex-1">
